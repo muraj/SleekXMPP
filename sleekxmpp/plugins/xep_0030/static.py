@@ -235,11 +235,14 @@ class StaticDisco(object):
         The data parameter is not used.
         """
         with self.lock:
-            if not self.node_exists(jid, node):
-                if not node:
-                    return DiscoItems()
-                else:
-                    raise XMPPError(condition='item-not-found')
+            if not node:  # Empty node, get all items
+                ret = DiscoItems()
+                for node in self.nodes.values():
+                    for jid, node, name in node['items'].get_items():
+                        ret.add_item(jid, node, name)
+                return ret
+            elif not self.node_exists(jid, node):
+                raise XMPPError(condition='item-not-found')
             else:
                 return self.get_node(jid, node)['items']
 
